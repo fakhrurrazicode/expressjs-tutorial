@@ -64,15 +64,9 @@ app.get("/api/users", loggingMiddleware, (req, res) => {
   return res.send(mockUsers);
 });
 
-app.get("/api/users/:id", (req, res) => {
-  const parsedId = parseInt(req.params.id);
-  console.log(parsedId);
-
-  if (isNaN(parsedId))
-    return res.status(401).send({ msg: "Bad Request, Invalid" });
-
-  const findUser = mockUsers.find((user) => user.id === parsedId);
-
+app.get("/api/users/:id", resolveIndexByUserId, (req, res) => {
+  const { findUserIndex } = req;
+  const findUser = mockUsers[findUserIndex];
   if (!findUser) return res.sendStatus(404);
   return res.send(findUser);
 });
