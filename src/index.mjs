@@ -4,6 +4,13 @@ const app = express();
 
 app.use(express.json());
 
+const loggingMiddleware = (req, res, next) => {
+  console.log(`${req.method} - ${req.url}`);
+  next();
+};
+
+// app.use(loggingMiddleware);
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
@@ -24,9 +31,7 @@ app.get("/", (req, res) => {
   res.status(201).send({ msg: "Hello, World!" });
 });
 
-app.get("/api/users", (req, res) => {
-  console.log(req.query);
-
+app.get("/api/users", loggingMiddleware, (req, res) => {
   const {
     query: { filter, value },
   } = req;
@@ -67,6 +72,9 @@ app.put("/api/users/:id", (req, res) => {
   if (isNaN(parsedId)) return res.sendStatus(400);
 
   const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+
+  if (findUserIndex === -1) return res.sendStatus(404);
+
   mockUsers[findUserIndex] = { id: parsedId, ...body };
   return res.sendStatus(200);
 });
@@ -81,7 +89,27 @@ app.patch("/api/users/:id", (req, res) => {
   if (isNaN(parsedId)) return res.sendStatus(400);
 
   const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+
+  if (findUserIndex === -1) return res.sendStatus(404);
+
   mockUsers[findUserIndex] = { ...mockUsers[parsedId], ...body };
+  return res.sendStatus(200);
+});
+
+app.delete("/api/users/:id", (req, res) => {
+  const {
+    params: { id },
+  } = req;
+
+  const parsedId = parseInt(id);
+  if (isNaN(parsedId)) return res.sendStatus(400);
+
+  const findUserIndex = mockUsers.findIndex((user) => user.id === parsedId);
+
+  if (findUserIndex === -1) return res.sendStatus(404);
+
+  mockUsers.splice(findUserIndex, 1);
+
   return res.sendStatus(200);
 });
 
